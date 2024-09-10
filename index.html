@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Microblogging App</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    .post { border: 1px solid #ddd; padding: 10px; margin: 10px 0; }
+    .post .username { font-weight: bold; }
+    #posts { margin-top: 20px; }
+    #new-post { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Microblogging App</h1>
+  <div id="new-post">
+    <input type="text" id="username" placeholder="Username">
+    <textarea id="content" placeholder="What's on your mind?"></textarea>
+    <button onclick="createPost()">Post</button>
+  </div>
+  <div id="posts"></div>
+  <script>
+    async function fetchPosts() {
+      const response = await fetch('/api/posts');
+      const posts = await response.json();
+      const postsDiv = document.getElementById('posts');
+      postsDiv.innerHTML = '';
+      posts.forEach(post => {
+        const postDiv = document.createElement('div');
+        postDiv.className = 'post';
+        postDiv.innerHTML = `<div class="username">${post.username}</div><div class="content">${post.content}</div>`;
+        postsDiv.appendChild(postDiv);
+      });
+    }
+
+    async function createPost() {
+      const username = document.getElementById('username').value;
+      const content = document.getElementById('content').value;
+      if (!username || !content) {
+        alert('Please fill out both fields.');
+        return;
+      }
+
+      const response = await fetch('/api/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, content })
+      });
+
+      if (response.ok) {
+        document.getElementById('username').value = '';
+        document.getElementById('content').value = '';
+        fetchPosts();
+      } else {
+        alert('Failed to post. Please try again.');
+      }
+    }
+
+    fetchPosts();
+  </script>
+</body>
+</html>
